@@ -11,6 +11,7 @@ const stageSchema = mongoose.Schema({
     category: String,
     personDesc: String,
     personYear: String,
+    personImage: String,
     itemName: String,
     itemImage: String,
     illustId: {
