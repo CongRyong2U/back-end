@@ -4,9 +4,19 @@ const { User } = require("../models/User");
 const { auth } = require("../middleware/auth");
 
 
-router.post("/info", (req, res) => {
+router.post("/info", async (req, res, next) => {
+  try{
+    const user = await User.findOne({_id: req.body._id});
 
+    return res.status(200).json({
+      success: true,
+      user
+    });
 
+  } catch (err) {
+    res.json({ success: false, err });
+    next(err);
+  }
 });
 
 router.post("/itemList", (req, res) => {
