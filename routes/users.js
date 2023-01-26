@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { User } = require("../models/User");
+const { Stage } = require("../models/Stage");
+const { Illust } = require("../models/Illust");
 const { auth } = require("../middleware/auth");
 
 
@@ -19,14 +21,82 @@ router.post("/info", async (req, res, next) => {
   }
 });
 
-router.post("/itemList", (req, res) => {
+router.post("/collection", async (req, res, next) => {
+  try{
+      const collection = await User.findOne({_id: req.body._id}, {illustList: 1}, {itemList: 1})
+      .populate("illustList", "name")
+      .populate({path: "itemList", populate: {path: "illustId", model: "Illust", populate: {path: "stageId", model: "Stage", select: {"itemName": 1}}} })
+      
+      /*
+      collection.aggregate([
+        {$project: {"illustList.$[].illustId.stageId.itemName": 0, "itemList.$[].count": 1}}
+      ])
+      */
 
-  
+     /*
+      const collection2 = User.aggregate([
+        {
+          $lookup: {
+            from: 'Illust',
+            localField: 'illustList.$[].illustId',
+            foreignField: '_id',
+            as: 'illust'
+          }
+        },
+        {
+          $lookup: {
+            from: 'Illust',
+            localField: 'itemList.$[].illustId',
+            foreignField: '_id',
+            as: 'item'
+          }
+        }, {
+          $unwind: "$item"
+        }, {
+          $project: {
+            "illustList.$[].illustId.stageId.itemName": 0, "itemList.$[].count": 1
+          }
+        }
+      ]) 
+      */
+
+      return res.status(200).json({
+          success: true,
+          collection
+      });
+      } catch (err) {
+      res.json({ success: false, err });
+      next(err);
+  }
 });
 
-router.post("/illustList", (req, res) => {
+router.post("/illustList", async (req, res, next) => {
+  try{
+    const illustList = await User.findOne({_id: req.body._id}, {illustList: 1})
+    .populate("illustList", "name")
+    return res.status(200).json({
+      success: true,
+      illustList
+    });
+  } catch (err) {
+  res.json({ success: false, err });
+  next(err);
+  }
+});
 
-  
+
+router.post("/itemList", async (req, res, next) => {
+  try{
+    const itemList = await User.findOne({_id: req.body._id}, {itemList: 1})
+      .populate({path: "itemList", populate: {path: "illustId", model: "Illust", populate: {path: "stageId", model: "Stage", select: {"itemName": 1}}} })
+      return res.status(200).json({
+        success: true,
+        itemList
+      });
+    } catch (err) {
+    res.json({ success: false, err });
+    next(err);
+  }
 });
 
 /* 아래는 auth 관련 라우트 */
