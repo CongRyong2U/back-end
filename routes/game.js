@@ -12,8 +12,8 @@ router.post("/save", async (req, res, next) => {
         const user = await User.findOne({ _id: req.body.userId});
 
         // 이미 일러스트를 보유 중이면 false 리턴
-        const illust = user.illustList.find(function(illustListItem){ return illustListItem.illustId == illustId}) 
-        if (illust==null) {
+        const illust = await user.illustList.find(function(illustListItem){ return illustListItem.illustId == illustId}) 
+        if (illust) {
             return res.status(200).json({
                 success: true,
                 unlocked: false,
@@ -23,10 +23,10 @@ router.post("/save", async (req, res, next) => {
 
         // user가 가진 itemList에서 illustId가 일치하는 아이템을 찾는다
         // 조건에 맞는 결과값 여러 개 찾으려면 filter, 가장 처음 하나 찾으려면 find
-        let item = user.itemList.find(function(itemListItem){ return itemListItem.illustId == illustId}) 
+        let item = await user.itemList.find(function(itemListItem){ return itemListItem.illustId == illustId}) 
 
         if (item!=null) {  // 존재하면 count에 더한다
-            const newCount = item.count + count;
+            const newCount = await item.count + count;
             
             if (newCount>=100) {  // count가 100을 넘으면 획득한 것!
                 // illustList에 일러스트 추가
